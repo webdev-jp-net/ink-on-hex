@@ -10,14 +10,16 @@ argument-hint: [issue-number]
 
 ## ワークフロー
 
-### Step 1: 現在の状況確認
+以下の順に進める。
+
+### 現在の状況確認
 
 ```bash
 git branch --show-current
 git status
 ```
 
-### Step 2: IssueのタスクをReadする
+### IssueのタスクをReadする
 
 ```bash
 gh issue view [Issue番号]
@@ -25,9 +27,9 @@ gh issue view [Issue番号]
 
 取得したIssueのtitleとbodyからやるべきことを読み込み、タスクを把握する。
 
-### Step 3: ブランチ判定と対応
+### ブランチ判定と対応
 
-- **現在のブランチ名が `#[Issue番号]` で終わる場合**: そのまま継続使用可能。Step 5へスキップ
+- **現在のブランチ名が `#[Issue番号]` で終わる場合**: そのまま継続使用可能。作業開始前の最終確認へスキップ
 - **上記以外の場合（`develop`・`main`・別Issueのブランチ）**: 対象Issue番号に対応する既存ブランチを探す
 
 末尾で照合する。`#3` は `#30` や `#35` にも部分一致するため、`grep "#[Issue番号]"` では別のIssueの
@@ -40,21 +42,21 @@ git branch --format='%(refname:short)' | grep -E "#[Issue番号]$"
 git branch --remotes --format='%(refname:short)' | grep -E "#[Issue番号]$"
 ```
 
-- **ローカルに見つかった場合**: そのブランチへチェックアウトしてStep 5へスキップ
+- **ローカルに見つかった場合**: そのブランチへチェックアウトして作業開始前の最終確認へスキップ
 
 ```bash
 git switch [見つかったローカルブランチ名]
 ```
 
-- **リモートにだけ見つかった場合**: 追跡ブランチを作ってチェックアウトし、Step 5へスキップ
+- **リモートにだけ見つかった場合**: 追跡ブランチを作ってチェックアウトし、作業開始前の最終確認へスキップ
 
 ```bash
 git switch --track [origin/見つかったブランチ名]
 ```
 
-- **見つからない場合**: Step 4へ進み新規ブランチを作成する
+- **見つからない場合**: 新規ブランチ作成へ進む
 
-### Step 4: 新規ブランチ作成
+### 新規ブランチ作成
 
 下記「ブランチ命名規則」に従いブランチ名を決定し、ユーザーに提案して承認を得てからローカルブランチを作成する。
 リモートへのpushはここでは行わない（PR作成時の責務）。
@@ -63,7 +65,7 @@ git switch --track [origin/見つかったブランチ名]
 git checkout -b feature/[英語概要]#[Issue番号]
 ```
 
-### Step 5: 作業開始前の最終確認
+### 作業開始前の最終確認
 
 ```bash
 git branch --show-current

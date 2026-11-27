@@ -27,13 +27,15 @@ codex exec --sandbox read-only --cd <project_directory> < <request_file>
 
 ## プロンプトのルール
 
-**重要**: codexに渡すリクエストには、以下の指示を必ず含めること：
+codexに渡すリクエストには、以下の指示を必ず含めること：
 
 > 「確認や質問は不要です。具体的な指摘まで自主的に出力してください。」
 
 ## ワークフロー
 
-### Step 1: レビュー対象の特定
+以下の順に進める。
+
+### レビュー対象の特定
 
 以下の優先順位でレビュー対象を特定する：
 
@@ -52,7 +54,7 @@ git rev-parse --verify HEAD
 
 取得した差分のうち、`.md` や `.txt` などドキュメントファイルの変更のみを対象とする。
 
-### Step 2: リクエストをファイルに書く
+### リクエストをファイルに書く
 
 `mkdir -p .claude/tmp` で置き場を用意してから、Writeツールで `.claude/tmp/doc-review-request.md` に
 次の内容を書く。対象の中身もここに含める。`.claude/tmp` は追跡対象外なので、cloneした直後には存在しない。
@@ -70,12 +72,12 @@ git rev-parse --verify HEAD
 - DRY原則に違反していないか
 - YAGNI原則に違反していないか
 
-対象: {$ARGUMENTS の内容、呼び出し元から渡された内容、または Step 1 で取得した差分}
+対象: {$ARGUMENTS の内容、呼び出し元から渡された内容、または レビュー対象の特定で取得した差分}
 
 確認や質問は不要です。具体的な指摘まで自主的に出力してください。
 ```
 
-### Step 3: Codex CLIでレビュー実行
+### Codex CLIでレビュー実行
 
 出力は全文をファイルへ保存する。`head` / `tail` で切ると読むべき指摘が消えたことに気づけない。
 保存先はリポジトリの外にする。中に置くとCodexが実行中の結果ファイルを読み、読んだ内容が同じファイルへ
@@ -86,6 +88,6 @@ codex exec --sandbox read-only --cd <project_directory> \
   < .claude/tmp/doc-review-request.md > "${TMPDIR:-/tmp}/doc-review-result.txt" 2>&1
 ```
 
-### Step 4: 結果を返す
+### 結果を返す
 
 Codexの出力を呼び出し元（ユーザーまたは他のスキル）に返す。
