@@ -37,6 +37,7 @@ description: Technical spec
 | `src/styles/`     | CSS変数と土台（`index.scss`）、mixin（`_variable/`）、デザインの基礎のストーリー                                       |
 | `.storybook/`     | UIのカタログ（Storybook）の設定                                                                                        |
 | `e2e/`            | 画面のテスト                                                                                                           |
+| `public/`         | ファビコン・Apple用アイコン・OGP画像。ビルド時に`dist/`直下へコピー                                                    |
 | `dist/`           | ビルドの出力（追跡しない）                                                                                             |
 
 ## 構成
