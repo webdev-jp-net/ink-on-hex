@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    .plates {
+      isolation: isolate;
+    }
+    .plates use {
+      mix-blend-mode: multiply;
+    }
+    .cyan {
+      transform: translate(-1.3333px, -0.8889px);
+    }
+    .magenta {
+      transform: translate(1.3333px, -0.4444px);
+    }
+    .yellow {
+      transform: translateY(1.3333px);
+    }
+    .dark-overlap {
+      display: none;
+    }
+    @media (prefers-color-scheme: dark) {
+      .dark-overlap {
+        display: inline;
+      }
+    }
+  </style>
+  <defs>
+    <polygon
+      id="hex"
+      points="-1,0 -0.5,0.8660254 0.5,0.8660254 1,0 0.5,-0.8660254 -0.5,-0.8660254"
+      transform="translate(32 32) scale(29)"
+    />
+    <clipPath id="cyan-clip">
+      <use class="cyan" href="#hex" />
+    </clipPath>
+    <clipPath id="magenta-clip">
+      <use class="magenta" href="#hex" />
+    </clipPath>
+    <mask id="cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
+      <rect width="64" height="64" fill="#fff" />
+      <path
+        d="M20 2C20 2 2 22 2 36A18 18 0 0 0 38 36C38 22 20 2 20 2Z"
+        transform="translate(18 12) scale(0.7)"
+        fill="#000"
+      />
+    </mask>
+  </defs>
+  <g mask="url(#cutout)">
+    <g class="plates">
+      <use class="cyan" href="#hex" fill="#00aeef" />
+      <use class="magenta" href="#hex" fill="#ec008c" />
+      <use class="yellow" href="#hex" fill="#fff200" />
+    </g>
+    <g class="dark-overlap" clip-path="url(#cyan-clip)">
+      <g clip-path="url(#magenta-clip)">
+        <use class="yellow" href="#hex" fill="#fff" />
+      </g>
+    </g>
+  </g>
+</svg>
