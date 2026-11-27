@@ -3,7 +3,17 @@ import { gsap } from 'gsap'
 import { ROOT3 } from '@/game/core'
 import { ease, milliseconds, seconds } from '@/utils/motionToken'
 import { createBoard, type Board, type Camera, type Tile } from './createBoard'
-import { addFall, clearFallList, fallOf, fallTile, hasFall, isFalling, stepFallList } from './fall'
+import {
+  addFall,
+  clearFallList,
+  FADE_TO,
+  fadeAlphaOf,
+  fallOf,
+  fallTile,
+  hasFall,
+  isFalling,
+  stepFallList,
+} from './fall'
 import { angleRatio, axialRound, cameraBetween, homeCamera, worldPosition } from './geometry'
 import { isRedrawNeeded, kick, markDrawn } from './redraw'
 import type { Scene } from './scene'
@@ -20,6 +30,9 @@ interface Transition {
   progress: { zoom: number; color: number }
   despawnedList: Set<string>
   despawnList: Set<string> | null
+  // ホームを離れ始めてからの経過。落ちるタイルの age と同じ単位
+  leaveAge: number
+  leaveRate: number
   timeline?: gsap.core.Timeline
   // 途中で打ち切られたときも待っている側を進める
   settle: () => void
@@ -115,10 +128,46 @@ function frame(time: number, deltaMs: number) {
     stepFallList(frameMs, board.depth / tileRadius)
     kick()
   }
+  // フレームが遅れても、ズームの経過より遅れないようにする（ホームを離れるときは寄り引きから始まる）。
+  // 遅いフレームでは、落ちるタイルとそろえるより、ズームの終わりに消えきることを優先する
+  if (transition?.from.isHome)
+    transition.leaveAge = Math.max(
+      transition.leaveAge + (frameMs / 1000) * transition.leaveRate,
+      (transition.timeline?.time() ?? 0) * transition.leaveRate
+    )
   const alphaEase = 1 - Math.exp(-frameMs / 260)
   const colorEase = 1 - Math.exp(-frameMs / 110)
   const spawnMs = milliseconds('--duration-spawn')
   const seen = transition ? null : new Set<string>()
+  // ホームのタイルは飾りで、ほかの場面のセルとは座標が重なっても別のもの。
+  // 重なった座標だけが残らないよう、ホームとの切り替えでは前後のタイルを別々に描く
+  const isSeparate = !!transition && (transition.from.isHome || transition.to.isHome)
+  const isLeavingHome = !!transition?.from.isHome
+  const pushTile = (
+    planeX: number,
+    planeY: number,
+    radius: number,
+    color: readonly number[],
+    alpha: number,
+    stroke: number,
+    glint: number,
+    lift: number
+  ) => {
+    if (alpha < 0.01) return
+    tileList.push({
+      x: planeX,
+      y: planeY,
+      radius,
+      red: color[0] / 255,
+      green: color[1] / 255,
+      blue: color[2] / 255,
+      alpha,
+      stroke,
+      fall: null,
+      glint,
+      lift,
+    })
+  }
   for (let q = qFrom; q <= qTo; q++) {
     const rFrom = Math.floor(worldTop / ROOT3 - q / 2) - 1
     const rTo = Math.ceil(worldBottom / ROOT3 - q / 2) + 1
@@ -136,25 +185,52 @@ function frame(time: number, deltaMs: number) {
       if (transition) {
         const fromCell = transition.from.cell(q, r)
         const toCell = transition.to.cell(q, r)
-        alpha = fromCell.alpha + (toCell.alpha - fromCell.alpha) * zoomProgress
         stroke = fromCell.stroke + (toCell.stroke - fromCell.stroke) * colorProgress
-        if (fromCell.alpha === 0 && toCell.alpha > 0)
-          lift = (1 - zoomProgress) * SPAWN_LIFT * tileRadius
         glint =
           (fromCell.glint || 0) + ((toCell.glint || 0) - (fromCell.glint || 0)) * colorProgress
         color = [0, 1, 2].map(
           i => fromCell.color[i] + (toCell.color[i] - fromCell.color[i]) * colorProgress
         )
-        if (
-          transition.despawnList?.has(key) &&
-          fromCell.alpha > 0 &&
-          toCell.alpha === 0 &&
-          !hasFall(key) &&
-          !transition.despawnedList.has(key)
-        ) {
-          transition.despawnedList.add(key)
-          despawnTile(key, planeX, planeY, DESPAWN_SPEED)
+        if (isSeparate) {
+          // ホームを離れるときは、切り替えの始めに見えていたタイルを倒して落とす
+          // 同じ座標でほかの落下が続いているときは、それを上書きしない
+          if (
+            transition.despawnList?.has(key) &&
+            fromCell.alpha > 0 &&
+            !transition.despawnedList.has(key)
+          ) {
+            transition.despawnedList.add(key)
+            if (!hasFall(key)) despawnTile(key, planeX, planeY, transition.leaveRate)
+          }
+          const fall = fallOf(key)
+          if (fall) tileList.push(fallTile(fall, planeX, planeY, tileRadius))
+          // 引いて見えてくるホームのタイルは、落ちるタイルと同じ曲線・同じ速さでその場で薄くする。
+          // ズームに合わせて薄くすると、落ちた範囲との境目が見える
+          const fromAlpha =
+            fall || transition.despawnedList.has(key)
+              ? 0
+              : fromCell.alpha *
+                (isLeavingHome ? fadeAlphaOf(transition.leaveAge) : 1 - zoomProgress)
+          const toAlpha = toCell.alpha * zoomProgress
+          // 2枚が重なる座標は、濃い方の1枚と同じ濃さに見えるよう、次のタイルを薄める
+          const toShownAlpha =
+            fromAlpha >= 1 ? 0 : Math.max(0, toAlpha - fromAlpha) / (1 - fromAlpha)
+          pushTile(planeX, planeY, tileRadius, color, fromAlpha, stroke, glint, 0)
+          pushTile(
+            planeX,
+            planeY,
+            tileRadius,
+            color,
+            toShownAlpha,
+            stroke,
+            glint,
+            (1 - zoomProgress) * SPAWN_LIFT * tileRadius
+          )
+          continue
         }
+        alpha = fromCell.alpha + (toCell.alpha - fromCell.alpha) * zoomProgress
+        if (fromCell.alpha === 0 && toCell.alpha > 0)
+          lift = (1 - zoomProgress) * SPAWN_LIFT * tileRadius
         const fall = fallOf(key)
         if (fall) {
           tileList.push(fallTile(fall, planeX, planeY, tileRadius))
@@ -214,20 +290,7 @@ function frame(time: number, deltaMs: number) {
           }
         }
       }
-      if (alpha < 0.01) continue
-      tileList.push({
-        x: planeX,
-        y: planeY,
-        radius: tileRadius * zoom,
-        red: color[0] / 255,
-        green: color[1] / 255,
-        blue: color[2] / 255,
-        alpha,
-        stroke,
-        fall: null,
-        glint,
-        lift,
-      })
+      pushTile(planeX, planeY, tileRadius * zoom, color, alpha, stroke, glint, lift)
     }
   }
   const clipTopOf = (scene: Scene) => scene.clipTop || 0
@@ -299,24 +362,34 @@ export function enter(next: Scene): Promise<void> {
     kick()
     return Promise.resolve()
   }
+  // 切り替えの途中では current は前の場面のままなので、打ち切る切り替えも同じ場面から離れている。
+  // 落とし済みのタイルと薄くなり具合を引き継ぎ、落ちきったタイルをもう一度落とさず、薄くしたタイルを戻さない
+  const interrupted = transition
   stopTransition()
   const fromColored = previous.colored()
   const toColored = next.colored()
   const progress = { zoom: 0, color: 0 }
   let settle = () => {}
+  const zoomSeconds = seconds('--duration-zoom')
+  const colorSeconds = seconds('--duration-color')
   const state: Transition = {
     settle: () => settle(),
     from: previous,
     to: next,
     progress,
-    despawnedList: new Set(),
-    despawnList: previous.isHome
-      ? new Set(visibleKeyList(previous.camera).map(([q, r]) => q + ',' + r))
-      : null,
+    despawnedList: new Set(interrupted?.despawnedList),
+    // 打ち切ったときは作り直さない。作り直すと、その間に見えてきて薄くなっていたタイルが、新しく落ちて濃く戻る
+    despawnList:
+      interrupted?.despawnList ??
+      (previous.isHome
+        ? new Set(visibleKeyList(previous.camera).map(([q, r]) => q + ',' + r))
+        : null),
+    leaveAge: interrupted?.leaveAge ?? 0,
+    // ホームのタイルを落とす速さと、引いて見えてくるタイルを薄くする速さ。遅くともズームの終わりに消えきる。
+    // DESPAWN_SPEED は、ズームが長いときに落ちる動きが遅くなりすぎないための下限
+    leaveRate: Math.max(DESPAWN_SPEED, FADE_TO / zoomSeconds),
   }
   transition = state
-  const zoomSeconds = seconds('--duration-zoom')
-  const colorSeconds = seconds('--duration-color')
   return new Promise(resolve => {
     settle = resolve
     const timeline = gsap.timeline({
