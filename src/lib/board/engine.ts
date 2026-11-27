@@ -200,11 +200,11 @@ function frame(time: number, deltaMs: number) {
             !transition.despawnedList.has(key)
           ) {
             transition.despawnedList.add(key)
-            if (!hasFall(key)) despawnTile(key, planeX, planeY, transition.leaveRate)
+            if (!hasFall(key)) despawnTile(key, planeX, planeY, DESPAWN_SPEED)
           }
           const fall = fallOf(key)
           if (fall) tileList.push(fallTile(fall, planeX, planeY, tileRadius))
-          // 引いて見えてくるホームのタイルは、落ちるタイルと同じ曲線・同じ速さでその場で薄くする。
+          // 引いて見えてくるホームのタイルは、落ちるタイルと同じ曲線でその場で薄くする。
           // ズームに合わせて薄くすると、落ちた範囲との境目が見える
           const fromAlpha =
             fall || transition.despawnedList.has(key)
@@ -385,8 +385,7 @@ export function enter(next: Scene): Promise<void> {
         ? new Set(visibleKeyList(previous.camera).map(([q, r]) => q + ',' + r))
         : null),
     leaveAge: interrupted?.leaveAge ?? 0,
-    // ホームのタイルを落とす速さと、引いて見えてくるタイルを薄くする速さ。遅くともズームの終わりに消えきる。
-    // DESPAWN_SPEED は、ズームが長いときに落ちる動きが遅くなりすぎないための下限
+    // 引いて見えてくるタイルを薄くする速さ。落ちるタイルの速さを下限に、遅くともズームの終わりに消えきる
     leaveRate: Math.max(DESPAWN_SPEED, FADE_TO / zoomSeconds),
   }
   transition = state
