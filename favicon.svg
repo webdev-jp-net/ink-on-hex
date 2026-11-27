@@ -6,6 +6,15 @@
     .plates use {
       mix-blend-mode: multiply;
     }
+    .cyan {
+      transform: translate(-1.3333px, -0.8889px);
+    }
+    .magenta {
+      transform: translate(1.3333px, -0.4444px);
+    }
+    .yellow {
+      transform: translateY(1.3333px);
+    }
     .dark-overlap {
       display: none;
     }
@@ -21,14 +30,11 @@
       points="-1,0 -0.5,0.8660254 0.5,0.8660254 1,0 0.5,-0.8660254 -0.5,-0.8660254"
       transform="translate(32 32) scale(29)"
     />
-    <use id="cyan" href="#hex" x="-1.3333" y="-0.8889" />
-    <use id="magenta" href="#hex" x="1.3333" y="-0.4444" />
-    <use id="yellow" href="#hex" y="1.3333" />
     <clipPath id="cyan-clip">
-      <use href="#cyan" />
+      <use class="cyan" href="#hex" />
     </clipPath>
     <clipPath id="magenta-clip">
-      <use href="#magenta" />
+      <use class="magenta" href="#hex" />
     </clipPath>
     <mask id="cutout" maskUnits="userSpaceOnUse" x="0" y="0" width="64" height="64">
       <rect width="64" height="64" fill="#fff" />
@@ -41,13 +47,13 @@
   </defs>
   <g mask="url(#cutout)">
     <g class="plates">
-      <use href="#cyan" fill="#00aeef" />
-      <use href="#magenta" fill="#ec008c" />
-      <use href="#yellow" fill="#fff200" />
+      <use class="cyan" href="#hex" fill="#00aeef" />
+      <use class="magenta" href="#hex" fill="#ec008c" />
+      <use class="yellow" href="#hex" fill="#fff200" />
     </g>
     <g class="dark-overlap" clip-path="url(#cyan-clip)">
       <g clip-path="url(#magenta-clip)">
-        <use href="#yellow" fill="#fff" />
+        <use class="yellow" href="#hex" fill="#fff" />
       </g>
     </g>
   </g>
