@@ -1,0 +1,219 @@
+@use '@/styles/_variable' as *;
+
+.main {
+  display: grid;
+  gap: var(--spacing-lg);
+  max-width: 1200px;
+  padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-2xl);
+  margin: 0 auto;
+  line-height: 24px;
+
+  h2 {
+    margin: 0 0 var(--spacing-sm);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 16px;
+    color: var(--txt-muted);
+    text-transform: uppercase;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 96px;
+    padding: var(--spacing-sm);
+    font-size: 12px;
+    line-height: 16px;
+    resize: vertical;
+  }
+
+  button:focus-visible,
+  select:focus-visible {
+    outline-offset: 4px;
+  }
+}
+
+// 選択欄と入力欄の土台。部品（TargetColorSelectなど）が上書きできるよう、詳細度を上げない
+:where(.main) {
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+    background: var(--bg-cell);
+    border: 1.5px solid var(--border-basic);
+    border-radius: 8px;
+  }
+
+  select {
+    flex: 1;
+    min-width: 0;
+    height: 40px;
+    padding: 0 var(--spacing-sm);
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 32px;
+  text-transform: uppercase;
+}
+
+.layout {
+  display: grid;
+  gap: var(--spacing-lg);
+
+  @media (width >= 900px) {
+    grid-template-columns: minmax(0, 1fr) 360px;
+    align-items: start;
+  }
+}
+
+.fieldWrap {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+.tabList {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.tab {
+  height: 40px;
+  padding: 0 var(--spacing-md);
+  color: var(--txt-muted);
+  border-radius: 20px;
+
+  &[aria-pressed='true'] {
+    color: var(--bg-basic);
+    background: var(--txt-basic);
+  }
+}
+
+.field {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  user-select: none;
+}
+
+.hex {
+  stroke: none;
+}
+
+.off {
+  fill: transparent;
+  stroke: var(--border-basic);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.panel {
+  display: grid;
+  gap: var(--spacing-lg);
+}
+
+.section {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.chip {
+  height: 40px;
+  padding: 0 var(--spacing-md);
+  color: var(--txt-basic);
+  border: 1.5px solid var(--border-basic);
+  border-radius: 20px;
+
+  &:active {
+    background: var(--border-basic);
+  }
+}
+
+.ink {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+
+  i {
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    opacity: 0.25;
+    transition: opacity 160ms;
+  }
+
+  &[aria-pressed='true'] i {
+    opacity: 1;
+  }
+}
+
+.step {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+
+  button {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    border: 1.5px solid var(--border-basic);
+    border-radius: 20px;
+  }
+
+  output {
+    min-width: 24px;
+    font-weight: 600;
+    text-align: center;
+  }
+}
+
+.status {
+  display: grid;
+  gap: var(--spacing-xs);
+  font-size: 14px;
+  line-height: 20px;
+
+  b {
+    font-weight: 600;
+  }
+}
+
+.muted {
+  color: var(--txt-muted);
+}
+
+.clear {
+  font-weight: 700;
+}
+
+.moveRow {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  min-height: 24px;
+
+  i {
+    display: block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+  }
+
+  .left {
+    background: transparent;
+    border: 1.5px solid var(--border-basic);
+  }
+}

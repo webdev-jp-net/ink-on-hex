@@ -1,0 +1,197 @@
+@use '@/styles/_variable' as *;
+
+.play {
+  position: fixed;
+  inset-block: 0 auto;
+  inset-inline: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-inline-size: 520px;
+  block-size: var(--vh);
+  margin-block: 0;
+  margin-inline: auto;
+  overflow: clip;
+
+  @include mq-wide {
+    display: grid;
+    grid-template:
+      'bar .' auto
+      'scorePanel .' auto
+      '. .' 1fr
+      'tray .' auto / 360px 1fr;
+    max-inline-size: none;
+    block-size: 100dvh;
+  }
+}
+
+// 開くときはスコア領域の枠とフッターを残す（スコア領域の数字は ScorePanel.module.scss で、場面の切り替え後に出す）
+.play[data-phase='entering'] {
+  > .scorePanel,
+  > .foot {
+    opacity: 1;
+  }
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--spacing-3xl);
+  padding-block: calc(var(--spacing-sm) + env(safe-area-inset-top)) 0;
+  padding-inline: var(--spacing-sm);
+
+  @include mq-wide {
+    position: relative;
+    z-index: 1;
+    grid-area: bar;
+  }
+
+  .mission & {
+    min-block-size: 0;
+    padding-block-start: calc(var(--spacing-md) + env(safe-area-inset-top));
+
+    @include mq-wide {
+      padding-block-start: var(--spacing-xl);
+    }
+  }
+}
+
+.scorePanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  padding-block: 0;
+  padding-inline: var(--spacing-md);
+
+  @include mq-wide {
+    position: relative;
+    z-index: 1;
+    grid-area: scorePanel;
+    padding-block: 0;
+    padding-inline: var(--spacing-lg) var(--spacing-md);
+  }
+
+  &:empty {
+    display: none;
+  }
+}
+
+.fieldArea {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-block-size: 0;
+  padding-block: var(--spacing-sm);
+  padding-inline: var(--spacing-xs);
+
+  @include mq-wide {
+    position: absolute;
+    inset: 0;
+    padding-block: var(--spacing-xl) var(--spacing-lg);
+    padding-inline: var(--spacing-xs);
+  }
+}
+
+.fit {
+  cursor: pointer;
+}
+
+.tray {
+  box-sizing: content-box;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  justify-items: center;
+  block-size: 120px;
+  padding-block: 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+  padding-inline: var(--spacing-md);
+
+  @include mq-wide {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    z-index: 1;
+    justify-items: end;
+    inline-size: 360px;
+    padding-block: 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+    padding-inline: 0 var(--spacing-md);
+  }
+}
+
+.moveRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  justify-self: stretch;
+  padding-block-end: var(--spacing-md);
+
+  @include mq-wide {
+    justify-content: flex-end;
+    padding-inline-end: var(--spacing-sm);
+  }
+}
+
+.palette {
+  display: flex;
+  grid-row: 2;
+  align-items: center;
+}
+
+.foot {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: 0;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  min-block-size: var(--spacing-3xl);
+  padding-block: 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+  padding-inline: var(--spacing-sm);
+  pointer-events: none;
+
+  @include mq-wide {
+    inset-inline-end: auto;
+    justify-content: flex-start;
+    inline-size: 360px;
+    padding-block-end: calc(var(--spacing-3xl) + env(safe-area-inset-bottom));
+    padding-inline-start: var(--spacing-md);
+
+    .atelier & {
+      inset-inline: auto 136px;
+      inline-size: auto;
+      padding-block: 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+      padding-inline: 0;
+    }
+  }
+
+  > * {
+    pointer-events: auto;
+  }
+}
+
+// 右下のボタン群は同じ場所に重ねて入れ替える
+.footRight {
+  display: grid;
+}
+
+.footGroup {
+  display: flex;
+  grid-area: 1 / 1;
+  justify-content: flex-end;
+
+  @include mq-wide {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .atelier & {
+      flex-direction: row;
+    }
+  }
+}
+
+.out {
+  pointer-events: none;
+}

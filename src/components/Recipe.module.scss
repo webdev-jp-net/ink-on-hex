@@ -1,0 +1,12 @@
+.recipe {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.dot {
+  display: block;
+  flex: none;
+  inline-size: 16px;
+  block-size: 16px;
+}

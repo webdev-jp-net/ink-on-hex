@@ -1,0 +1,5 @@
+pnpm-lock.yaml
+dist/
+e2e/out/
+bun.lock
+storybook-static/

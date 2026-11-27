@@ -1,0 +1,21 @@
+.swatch {
+  display: block;
+  flex: none;
+  block-size: auto;
+  aspect-ratio: 2 / 1.7321;
+}
+
+// 2色の課題色は重ねる。重ねる量は使う側が --swatch-overlap で渡す
+.hexList {
+  display: flex;
+  flex: none;
+
+  > .swatch:first-child {
+    position: relative;
+    z-index: 1;
+  }
+
+  > .swatch + .swatch {
+    margin-inline-start: var(--swatch-overlap, 0);
+  }
+}

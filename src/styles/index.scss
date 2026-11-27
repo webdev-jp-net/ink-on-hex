@@ -1,0 +1,112 @@
+@use '_variable' as *;
+
+/* CSS変数定義 */
+
+:root {
+  /* カラー。JSは src/utils/colorToken.ts で読む */
+  --bg-basic: #ebebeb;
+  --bg-cell: #fff;
+  --txt-basic: #1c1c1c;
+  --txt-muted: #8a8a8a;
+  --border-basic: #d0d0d0;
+
+  /* 押せない状態の不透明度 */
+  --opacity-disabled: 0.3;
+
+  /* フォント */
+  --font-family: 'JetBrains Mono', ui-monospace, sfmono-regular, menlo, consolas, monospace;
+
+  /* 文字の大きさ。役割で決める（design.md「文字」） */
+  --font-size-mark: 12px; /* 小さな印（CLEAR、点数の印の数字） */
+  --font-size-body: 16px; /* 本文とカウント */
+  --font-size-color-name: 18px; /* コレクションの色名 */
+  --font-size-heading: 24px; /* 画面の見出し */
+  --font-size-result: 32px; /* 到達の結果（最終スコア） */
+  --font-size-title: 40px; /* タイトル */
+
+  /* スペーシング（8px単位） */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 56px;
+
+  /* 時間とイージング。JSは src/utils/motionToken.ts で読む */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --duration-stagger: 50ms;
+  --duration-ring: 100ms;
+  --duration-fade-out: 240ms;
+  --duration-color: 300ms;
+  --duration-pulse: 300ms;
+  --duration-fade-in: 320ms;
+  --duration-spawn: 500ms;
+  --duration-move: 500ms;
+  --duration-zoom: 600ms;
+  --duration-count: 1000ms;
+
+  /* 1画面の高さ。visualViewport に合わせてJSが書き換える */
+  --vh: 100dvh;
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  block-size: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-body);
+  line-height: 1.5;
+  color: var(--txt-basic);
+  background: var(--bg-basic);
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+
+button:focus-visible {
+  outline: 2px solid var(--txt-basic);
+  outline-offset: 8px;
+  border-radius: 8px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* 画面の切り替え。中身ごとに消して出す */
+[data-phase] > * {
+  transition: opacity var(--duration-fade-in);
+}
+
+[data-phase='entering'] > * {
+  opacity: 0;
+  transition: none;
+}
+
+[data-phase='leaving'] {
+  pointer-events: none;
+
+  > * {
+    opacity: 0;
+    transition: opacity var(--duration-fade-out);
+  }
+}

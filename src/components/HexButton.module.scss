@@ -1,0 +1,27 @@
+.hexButton {
+  position: relative;
+  inline-size: 192px;
+  block-size: var(--spacing-2xl);
+  padding: 0;
+  font-size: var(--font-size-body);
+  font-weight: 500;
+
+  svg {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  polyline {
+    fill: none;
+    stroke: var(--txt-basic);
+    stroke-width: 1.5;
+    stroke-linejoin: miter;
+  }
+
+  span {
+    position: relative;
+    text-transform: uppercase;
+  }
+}

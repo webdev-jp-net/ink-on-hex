@@ -1,0 +1,63 @@
+.row {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-end;
+}
+
+.droplet {
+  position: relative;
+  display: block;
+  flex: none;
+}
+
+.icon {
+  display: block;
+}
+
+// 次の1滴は上下に揺れ、影が伸び縮みする
+.current .icon {
+  animation: bob 1.6s ease-in-out infinite;
+}
+
+.shadow {
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  inline-size: 40px;
+  block-size: 8px;
+  margin-block: 4px 0;
+  margin-inline: -20px 0;
+
+  svg {
+    display: block;
+    inline-size: 100%;
+    block-size: 100%;
+    animation: shade 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes shade {
+  0%,
+  100% {
+    opacity: 1;
+    filter: blur(0);
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.6;
+    filter: blur(1px);
+    transform: scale(1.2);
+  }
+}

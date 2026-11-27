@@ -1,0 +1,15 @@
+.inkButton {
+  display: grid;
+  place-items: center;
+  inline-size: 40px;
+  block-size: var(--spacing-2xl);
+
+  svg {
+    display: block;
+  }
+}
+
+.inkButton:disabled {
+  pointer-events: none;
+  opacity: var(--opacity-disabled);
+}

@@ -1,0 +1,6 @@
+// 横長の広い画面（PCレイアウト）。JSの isWide() と同じ条件
+@mixin mq-wide {
+  @media (width >= 900px) and (orientation: landscape) {
+    @content;
+  }
+}

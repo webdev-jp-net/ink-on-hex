@@ -1,0 +1,146 @@
+// 中身を作り変えられる選択欄（appearance: base-select）。対応していないブラウザでは、ふつうの選択欄のまま
+// 欄の名前（1・2）と選択欄を横に並べる
+.field {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.label {
+  flex: none;
+  inline-size: var(--spacing-md);
+  font-size: var(--font-size-body);
+  line-height: 24px;
+  color: var(--txt-muted);
+}
+
+.select,
+.select::picker(select) {
+  appearance: base-select;
+}
+
+.select {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-md);
+  align-items: center;
+  min-inline-size: 0;
+  block-size: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  background: var(--bg-cell);
+  border: 1.5px solid var(--border-basic);
+  border-radius: 8px;
+
+  // 開く印は文字の「▼」なので出さず、アイコンで描く（記号は文字で代用しない）
+  &::picker-icon {
+    display: none;
+  }
+
+  // 閉じているときは、選んだ色名のヘックスと色名だけを出す
+  selectedcontent {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+  }
+
+  selectedcontent .swatch {
+    block-size: 24px;
+  }
+
+  selectedcontent .none {
+    inline-size: calc(24px * 2 / 1.7321);
+    block-size: 24px;
+  }
+
+  selectedcontent .recipeSlot {
+    display: none;
+  }
+}
+
+.select:open::picker(select) {
+  max-block-size: min(480px, 70vh);
+  padding: var(--spacing-sm);
+  overflow-y: auto;
+  background: var(--bg-cell);
+  border: 1.5px solid var(--border-basic);
+  border-radius: 8px;
+}
+
+.select option {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+  padding: var(--spacing-sm);
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+
+  &::checkmark {
+    display: none;
+  }
+
+  &:hover {
+    background: var(--bg-basic);
+  }
+
+  // キーボードで移動中の項目は、選んでいる項目の枠とは別に、外側の線で示す
+  &:focus-visible {
+    outline: 2px solid var(--txt-muted);
+    outline-offset: 2px;
+    background: var(--bg-basic);
+  }
+
+  // 選んでいる項目は、枠線と太字の2つで示す
+  &:checked {
+    font-weight: 600;
+    border-color: var(--txt-basic);
+  }
+}
+
+.button {
+  display: flex;
+  flex: 1;
+  gap: var(--spacing-md);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+}
+
+.expand {
+  display: block;
+  flex: none;
+  color: var(--txt-muted);
+
+  svg {
+    display: block;
+    inline-size: 24px;
+    block-size: 24px;
+    fill: currentcolor;
+  }
+}
+
+// Swatch の既定の大きさより詳細度を上げて指定する
+.select .swatch {
+  block-size: 40px;
+}
+
+.none {
+  display: block;
+  flex: none;
+  inline-size: calc(40px * 2 / 1.7321);
+  block-size: 40px;
+}
+
+.text {
+  display: grid;
+  gap: var(--spacing-xs);
+}
+
+.name {
+  font-size: var(--font-size-body);
+  line-height: 24px;
+}

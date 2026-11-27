@@ -1,0 +1,22 @@
+.pointHex {
+  display: grid;
+  place-items: center;
+  color: var(--txt-muted);
+
+  > * {
+    grid-area: 1 / 1;
+  }
+
+  svg {
+    display: block;
+    inline-size: auto;
+    block-size: 16px;
+    aspect-ratio: 2 / 1.7321;
+  }
+}
+
+.digit {
+  font-size: var(--font-size-mark);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}

@@ -1,0 +1,28 @@
+@use '@/styles/_variable' as *;
+
+.board {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+// 戻るボタン。どの画面でも左下の同じ位置
+.back {
+  position: fixed;
+  inset-block-end: calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+  inset-inline-start: max(var(--spacing-sm), calc(50vw - 252px));
+  z-index: 3;
+  transition: opacity var(--duration-fade-out);
+
+  @include mq-wide {
+    inset-inline-start: var(--spacing-md);
+  }
+}
+
+.off {
+  pointer-events: none;
+  opacity: 0;
+}

@@ -1,0 +1,130 @@
+@use '@/styles/_variable' as *;
+
+// スコア領域
+.score {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+  align-self: stretch;
+  font-size: var(--font-size-body);
+  font-variant-numeric: tabular-nums;
+  line-height: 24px;
+}
+
+.targetColor {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
+}
+
+.targetHex {
+  --swatch-overlap: calc(24px - 56px * 2 / 1.7321);
+
+  display: flex;
+
+  svg {
+    block-size: 56px;
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  block-size: 56px;
+}
+
+.spacer {
+  display: block;
+  block-size: 12px;
+}
+
+.clear {
+  display: block;
+  font-size: var(--font-size-mark);
+  line-height: 12px;
+  text-box: trim-both cap alphabetic;
+  color: var(--txt-basic);
+
+  > span {
+    display: inline-block;
+  }
+}
+
+.word {
+  padding-block: var(--spacing-sm);
+  padding-inline: 0;
+  margin-block: calc(var(--spacing-sm) * -1);
+  margin-inline: 0;
+}
+
+.times,
+.extra {
+  align-items: flex-end;
+}
+
+.times {
+  block-size: 1cap;
+  font-size: var(--font-size-body);
+  line-height: 16px;
+  color: var(--txt-muted);
+
+  span {
+    text-box: trim-both cap alphabetic;
+  }
+}
+
+// ×の印を数字の下端にそろえる
+.times > svg,
+.extra > svg {
+  margin-block-end: 2px;
+}
+
+.final {
+  font-size: var(--font-size-result);
+  line-height: 32px;
+  color: var(--txt-basic);
+}
+
+.best {
+  display: block;
+  color: var(--txt-basic);
+
+  svg {
+    display: block;
+    inline-size: 24px;
+    block-size: 24px;
+    margin-block: 0 -3px;
+    margin-inline: 0;
+    fill: currentcolor;
+    stroke: none;
+  }
+}
+
+.pointList {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: var(--spacing-md);
+  align-self: stretch;
+  color: var(--txt-muted);
+
+  @include mq-wide {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pointRow {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  block-size: 24px;
+}
+
+// 開くときは課題色のヘックスを残し、数字は場面の切り替え後に出す
+.score.entering {
+  > :not(.targetColor),
+  .targetColor .text {
+    opacity: 0;
+  }
+}

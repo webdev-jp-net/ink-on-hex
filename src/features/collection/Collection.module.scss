@@ -1,0 +1,80 @@
+@use '@/styles/_variable' as *;
+
+.scroll {
+  @include mq-wide {
+    padding-inline-end: var(--spacing-2xl);
+  }
+}
+
+.collection {
+  position: relative;
+}
+
+.slot {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+}
+
+.rowList {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  @include mq-wide {
+    border-block-end: 1px solid var(--border-basic);
+  }
+  // 区切り線。1列では最後の行に引かず、PCレイアウトでは全部の行に引く
+  &:not(:last-child) {
+    border-block-end: 1px solid var(--border-basic);
+  }
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  block-size: 64px;
+}
+
+.word {
+  padding-block: var(--spacing-sm);
+  padding-inline: 0;
+  margin-block: calc(var(--spacing-sm) * -1);
+  margin-inline: 0;
+}
+
+.name {
+  position: relative;
+  inset-block-start: 2px;
+  display: block;
+  font-size: var(--font-size-color-name);
+  font-weight: 600;
+  line-height: 24px;
+  text-box: trim-both cap alphabetic;
+}
+
+.none .name {
+  font-weight: 400;
+  color: var(--txt-muted);
+}
+
+.recipeSlot {
+  display: block;
+}
+
+.times {
+  font-size: var(--font-size-body);
+  line-height: 16px;
+  color: var(--txt-muted);
+
+  span {
+    text-box: trim-both cap alphabetic;
+  }
+}

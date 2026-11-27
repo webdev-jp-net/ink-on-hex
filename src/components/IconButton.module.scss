@@ -1,0 +1,48 @@
+@use '@/styles/_variable' as *;
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  inline-size: var(--spacing-2xl);
+  block-size: var(--spacing-2xl);
+  color: var(--txt-muted);
+
+  @include mq-wide {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    justify-content: flex-start;
+    inline-size: auto;
+    padding-block: 0;
+    padding-inline: var(--spacing-sm);
+
+    &::after {
+      font-size: var(--font-size-body);
+      line-height: 24px;
+      content: attr(aria-label);
+    }
+  }
+
+  svg {
+    inline-size: 32px;
+    block-size: 32px;
+    fill: currentcolor;
+  }
+
+  &[disabled] {
+    cursor: default;
+    opacity: var(--opacity-disabled);
+  }
+}
+
+.iconButton.compact {
+  @include mq-wide {
+    display: grid;
+    inline-size: var(--spacing-2xl);
+    padding: 0;
+
+    &::after {
+      content: none;
+    }
+  }
+}

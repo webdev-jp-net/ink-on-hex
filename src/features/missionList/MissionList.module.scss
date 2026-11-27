@@ -1,0 +1,45 @@
+.list {
+  position: relative;
+  cursor: pointer;
+}
+
+.mission {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+  transform: translateX(-50%);
+}
+
+.targetColor {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  font-weight: 600;
+}
+
+.targetColor {
+  --swatch-overlap: -16px;
+}
+
+.targetColor svg {
+  inline-size: 24px;
+}
+
+.moveCount {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  font-size: var(--font-size-body);
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.droplet {
+  display: block;
+  inline-size: auto;
+  block-size: 16px;
+  aspect-ratio: 40 / 56;
+  fill: var(--txt-basic);
+}

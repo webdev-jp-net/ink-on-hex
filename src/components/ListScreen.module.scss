@@ -1,0 +1,135 @@
+@use '@/styles/_variable' as *;
+
+.screen {
+  position: fixed;
+  inset-block: 0 auto;
+  inset-inline: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  max-inline-size: 480px;
+  block-size: var(--vh);
+  margin-block: 0;
+  margin-inline: auto;
+  overflow: clip;
+
+  @include mq-wide {
+    max-inline-size: none;
+  }
+}
+
+.body {
+  position: relative;
+  flex: 1;
+  min-block-size: 0;
+  overflow: clip;
+
+  @include mq-wide {
+    margin-inline-start: 240px;
+  }
+}
+
+.scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  will-change: transform;
+}
+
+// 見出しとフッター。中身が下に潜るとすりガラスになる
+.head,
+.foot {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  align-items: center;
+  min-block-size: var(--spacing-3xl);
+
+  &::before {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    content: '';
+    background: color-mix(in srgb, var(--bg-basic) 55%, transparent);
+    opacity: var(--edge, 0);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    transition: opacity var(--duration-fade-in);
+  }
+
+  &::after {
+    position: absolute;
+    inset-inline: 0;
+    block-size: 1px;
+    pointer-events: none;
+    content: '';
+    background: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 40%),
+      rgb(255 255 255 / 6%) 55%,
+      rgb(255 255 255 / 24%)
+    );
+    opacity: var(--edge, 0);
+    -webkit-backdrop-filter: brightness(1.03) saturate(1.6);
+    backdrop-filter: brightness(1.03) saturate(1.6);
+    transition: opacity var(--duration-fade-in);
+  }
+}
+
+.head {
+  inset-block-start: 0;
+  padding-block: calc(var(--spacing-sm) + env(safe-area-inset-top)) 0;
+  padding-inline: var(--spacing-lg);
+
+  @include mq-wide {
+    inset-inline-end: auto;
+    align-items: flex-start;
+    inline-size: 240px;
+    min-block-size: 0;
+    padding-block-start: var(--spacing-xl);
+
+    &::before,
+    &::after {
+      display: none;
+    }
+  }
+
+  &::after {
+    inset-block-end: 0;
+  }
+}
+
+.foot {
+  inset-block-end: 0;
+  min-block-size: var(--spacing-3xl);
+  padding-block: 0 calc(var(--spacing-sm) + env(safe-area-inset-bottom));
+  padding-inline: var(--spacing-sm);
+
+  &::before,
+  &::after {
+    display: none;
+  }
+}
+
+// 切り替え中は見出しのすりガラスを消す
+.screen:is([data-phase='entering'], [data-phase='leaving']) .head {
+  &::before,
+  &::after {
+    opacity: 0;
+  }
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-heading);
+  font-weight: 600;
+  text-transform: uppercase;
+
+  @include mq-wide {
+    text-box: trim-both cap alphabetic;
+  }
+}
