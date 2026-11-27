@@ -3,17 +3,7 @@ import { gsap } from 'gsap'
 import { ROOT3 } from '@/game/core'
 import { ease, milliseconds, seconds } from '@/utils/motionToken'
 import { createBoard, type Board, type Camera, type Tile } from './createBoard'
-import {
-  addFall,
-  clearFallList,
-  FADE_TO,
-  fadeAlphaOf,
-  fallOf,
-  fallTile,
-  hasFall,
-  isFalling,
-  stepFallList,
-} from './fall'
+import { addFall, clearFallList, fallOf, fallTile, hasFall, isFalling, stepFallList } from './fall'
 import { angleRatio, axialRound, cameraBetween, homeCamera, worldPosition } from './geometry'
 import { isRedrawNeeded, kick, markDrawn } from './redraw'
 import type { Scene } from './scene'
@@ -29,10 +19,6 @@ interface Transition {
   to: Scene
   progress: { zoom: number; color: number }
   despawnedList: Set<string>
-  despawnList: Set<string> | null
-  // ホームを離れ始めてからの経過。落ちるタイルの age と同じ単位
-  leaveAge: number
-  leaveRate: number
   timeline?: gsap.core.Timeline
   // 途中で打ち切られたときも待っている側を進める
   settle: () => void
@@ -71,20 +57,16 @@ export function addBeforeFrame(callback: () => boolean): () => void {
   return () => beforeFrameList.delete(callback)
 }
 
-// タイルを倒して落とす。planeX, planeY は画面座標
+// タイルを倒して落とす。planeX, planeY は盤面の平面上の座標。camera は落ちる向きを決めるカメラ
 export function despawnTile(
   key: string,
   planeX: number,
   planeY: number,
   speed = 1,
-  color: readonly number[] | null = null
+  color: readonly number[] | null = null,
+  camera: Camera = current?.camera ?? homeCamera()
 ): void {
-  addFall(
-    key,
-    boardOf().viewDirection(planeX, planeY, current?.camera ?? homeCamera()),
-    speed,
-    color
-  )
+  addFall(key, boardOf().viewDirection(planeX, planeY, camera), speed, color)
 }
 
 function frame(time: number, deltaMs: number) {
@@ -128,13 +110,6 @@ function frame(time: number, deltaMs: number) {
     stepFallList(frameMs, board.depth / tileRadius)
     kick()
   }
-  // フレームが遅れても、ズームの経過より遅れないようにする（ホームを離れるときは寄り引きから始まる）。
-  // 遅いフレームでは、落ちるタイルとそろえるより、ズームの終わりに消えきることを優先する
-  if (transition?.from.isHome)
-    transition.leaveAge = Math.max(
-      transition.leaveAge + (frameMs / 1000) * transition.leaveRate,
-      (transition.timeline?.time() ?? 0) * transition.leaveRate
-    )
   const alphaEase = 1 - Math.exp(-frameMs / 260)
   const colorEase = 1 - Math.exp(-frameMs / 110)
   const spawnMs = milliseconds('--duration-spawn')
@@ -143,6 +118,20 @@ function frame(time: number, deltaMs: number) {
   // 重なった座標だけが残らないよう、ホームとの切り替えでは前後のタイルを別々に描く
   const isSeparate = !!transition && (transition.from.isHome || transition.to.isHome)
   const isLeavingHome = !!transition?.from.isHome
+  // タイルの一部でも画面に映るか。planeX, planeY は盤面の平面上の座標
+  // toScreen は直前に aim したカメラで投影する。倒すときもこのフレームの camera を渡し、判定の傾きをそろえる
+  // 余白は、遠近で大きく映る分と、厚み・奥行きぼかしの分を含めて広めに取る（早めに倒れても害はない）
+  const drawingBoard = board
+  const isOnScreen = (planeX: number, planeY: number, radius: number) => {
+    const [screenX, screenY] = drawingBoard.toScreen(planeX, planeY)
+    const margin = radius * 1.5 + HOME_BLUR
+    return (
+      screenX > -margin &&
+      screenX < drawingBoard.width + margin &&
+      screenY > -margin &&
+      screenY < height + margin
+    )
+  }
   const pushTile = (
     planeX: number,
     planeY: number,
@@ -192,25 +181,22 @@ function frame(time: number, deltaMs: number) {
           i => fromCell.color[i] + (toCell.color[i] - fromCell.color[i]) * colorProgress
         )
         if (isSeparate) {
-          // ホームを離れるときは、切り替えの始めに見えていたタイルを倒して落とす
+          // ホームを離れるときは、タイルが画面に入ったところで倒して落とす。
+          // 最初から見えていたタイルも、引いて見えてくるタイルも同じ消え方にし、消え方の違いで境目を作らない
           // 同じ座標でほかの落下が続いているときは、それを上書きしない
           if (
-            transition.despawnList?.has(key) &&
+            isLeavingHome &&
             fromCell.alpha > 0 &&
-            !transition.despawnedList.has(key)
+            !transition.despawnedList.has(key) &&
+            isOnScreen(planeX, planeY, tileRadius)
           ) {
             transition.despawnedList.add(key)
-            if (!hasFall(key)) despawnTile(key, planeX, planeY, DESPAWN_SPEED)
+            if (!hasFall(key)) despawnTile(key, planeX, planeY, DESPAWN_SPEED, null, camera)
           }
           const fall = fallOf(key)
           if (fall) tileList.push(fallTile(fall, planeX, planeY, tileRadius))
-          // 引いて見えてくるホームのタイルは、落ちるタイルと同じ曲線でその場で薄くする。
-          // ズームに合わせて薄くすると、落ちた範囲との境目が見える
-          const fromAlpha =
-            fall || transition.despawnedList.has(key)
-              ? 0
-              : fromCell.alpha *
-                (isLeavingHome ? fadeAlphaOf(transition.leaveAge) : 1 - zoomProgress)
+          // ホームのタイルは落ちるものとして描く。まだ画面に入っていないものは描かない
+          const fromAlpha = isLeavingHome || fall ? 0 : fromCell.alpha * (1 - zoomProgress)
           const toAlpha = toCell.alpha * zoomProgress
           // 2枚が重なる座標は、濃い方の1枚と同じ濃さに見えるよう、次のタイルを薄める
           const toShownAlpha =
@@ -363,7 +349,7 @@ export function enter(next: Scene): Promise<void> {
     return Promise.resolve()
   }
   // 切り替えの途中では current は前の場面のままなので、打ち切る切り替えも同じ場面から離れている。
-  // 落とし済みのタイルと薄くなり具合を引き継ぎ、落ちきったタイルをもう一度落とさず、薄くしたタイルを戻さない
+  // 落とし済みのタイルを引き継ぎ、落ちきったタイルをもう一度落とさない
   const interrupted = transition
   stopTransition()
   const fromColored = previous.colored()
@@ -378,15 +364,6 @@ export function enter(next: Scene): Promise<void> {
     to: next,
     progress,
     despawnedList: new Set(interrupted?.despawnedList),
-    // 打ち切ったときは作り直さない。作り直すと、その間に見えてきて薄くなっていたタイルが、新しく落ちて濃く戻る
-    despawnList:
-      interrupted?.despawnList ??
-      (previous.isHome
-        ? new Set(visibleKeyList(previous.camera).map(([q, r]) => q + ',' + r))
-        : null),
-    leaveAge: interrupted?.leaveAge ?? 0,
-    // 引いて見えてくるタイルを薄くする速さ。落ちるタイルの速さを下限に、遅くともズームの終わりに消えきる
-    leaveRate: Math.max(DESPAWN_SPEED, FADE_TO / zoomSeconds),
   }
   transition = state
   return new Promise(resolve => {

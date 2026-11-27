@@ -66,11 +66,6 @@ function rotateAroundAxis(
   ]
 }
 
-// 落ち始めてからの経過（speed をかけた秒）に対する不透明度
-export function fadeAlphaOf(age: number): number {
-  return 1 - Math.min(1, Math.max(0, (age - FADE_FROM) / (FADE_TO - FADE_FROM)))
-}
-
 // 1フレーム分進める。limit より奥へ落ちたもの、消えきったものは外す
 export function stepFallList(frameMs: number, limit: number): void {
   const acceleration = 0.857 * GRAVITY
@@ -107,7 +102,7 @@ export function stepFallList(frameMs: number, limit: number): void {
         fall.angle += fall.angularVelocity * step
       }
     }
-    fall.alpha = fadeAlphaOf(fall.age)
+    fall.alpha = 1 - Math.min(1, Math.max(0, (fall.age - FADE_FROM) / (FADE_TO - FADE_FROM)))
     if (fall.position[2] < -limit || fall.age >= FADE_TO) fallList.delete(key)
   }
 }
