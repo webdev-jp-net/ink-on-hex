@@ -77,7 +77,7 @@ description: Design spec
 | 盤面の色の切り替え                                 | `--duration-color`    |
 | セルの膨らみ                                       | `--duration-pulse`    |
 | 画面の中身が現れる                                 | `--duration-fade-in`  |
-| タイルの登場                                       | `--duration-spawn`    |
+| タイルの登場、落下との行き来                       | `--duration-spawn`    |
 | 手数の列・点数表の出入り                           | `--duration-move`     |
 | 盤面の寄り引き                                     | `--duration-zoom`     |
 | カウントアップ                                     | `--duration-count`    |
