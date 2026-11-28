@@ -126,6 +126,16 @@ export function addBeforeFrame(callback: () => boolean): () => void {
   return () => beforeFrameList.delete(callback)
 }
 
+// その座標にタイルを登場させる（浮いた位置から降りてくる）。場面がその座標にタイルを置くようになったときに、画面側が呼ぶ。
+// 呼ばなければ、画面に入ってきたタイルと同じく、その場の見え方で描き始める
+export function spawnTile(key: string): void {
+  const shown = shownList.get(key)
+  if (shown) shown.alpha = 0
+  else shownList.set(key, { alpha: 0, color: [0, 0, 0], stroke: 0, glint: 0, zoom: 1, lift: 0 })
+  unsettledList.add(key)
+  kick()
+}
+
 // タイルを倒して落とす。planeX, planeY は盤面の平面上の座標。camera は落ちる向きを決めるカメラ
 export function despawnTile(
   key: string,
@@ -382,8 +392,11 @@ function frame(time: number, deltaMs: number) {
           continue
         }
         if (target.alpha > 0 && shown.alpha < VISIBLE_ALPHA && shown.spawnedAt == null) {
+          // 新しく登場するタイルは、場面の見え方から始める
           shown.spawnedAt = performance.now()
           shown.alpha = 0
+          for (let i = 0; i < 3; i++) shown.color[i] = target.color[i]
+          shown.stroke = target.stroke
         }
         shown.lift = 0
         if (shown.spawnedAt != null) {
