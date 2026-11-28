@@ -94,6 +94,7 @@ export function MissionList() {
       cell: (q, r) =>
         plan.owner.has(q + ',' + r) ? { alpha: 1, color: rgbToken('--bg-cell'), stroke: 0 } : EMPTY,
       colored: () => false,
+      tileKeyList: () => plan.owner.keys(),
       layout,
     }
     sceneRef.current = scene

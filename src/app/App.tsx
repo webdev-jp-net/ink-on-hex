@@ -1,5 +1,5 @@
 // 画面の切り替え。前の画面を消しながら次の画面を出し、盤面の場面切り替えが終わったら前の画面を外す
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { mount, resize } from '@/lib/board/engine'
 import { viewHeight } from '@/utils/viewport'
@@ -41,7 +41,10 @@ function syncViewport() {
 }
 
 export default function App() {
-  const route = useAtomValue(routeAtom)
+  // 次の画面の描画は後回しにして、Reactに細かく分けて進めさせる。
+  // 押した処理の中で1度に描くと1フレームに収まらず、切り替えの始まりで盤面が1コマ止まる
+  const latestRoute = useAtomValue(routeAtom)
+  const route = useDeferredValue(latestRoute)
   const back = useAtomValue(backAtom)
   const setRoute = useSetAtom(routeAtom)
   const [shownList, setShownList] = useState<Shown[]>([{ id: 0, route, phase: 'idle' }])
@@ -77,7 +80,8 @@ export default function App() {
     ])
   }
 
-  const busy = shownList.some(shown => shown.phase !== 'idle')
+  // 次の画面を後回しにして描いている間も、切り替えの途中として操作を止める
+  const busy = route !== latestRoute || shownList.some(shown => shown.phase !== 'idle')
   useEffect(() => {
     document.body.style.pointerEvents = busy ? 'none' : ''
   }, [busy])

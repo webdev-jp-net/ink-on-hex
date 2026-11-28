@@ -14,7 +14,7 @@ export const POP = {
 export function popIn(elementList: Element[] | NodeListOf<Element>): void {
   gsap.fromTo(
     elementList,
-    { opacity: 0, scale: POP.from },
+    { opacity: 0, scale: POP.from, transformOrigin: '50% 50%' },
     {
       keyframes: [
         { opacity: 1, scale: POP.over, duration: POP.in, ease: 'power2.out' },

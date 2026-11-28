@@ -30,6 +30,8 @@ export function createPlayScene({
   const [offsetQ, offsetR] = offset
   const box = boxOf(fullCellList(radius).map(([q, r]) => [q + offsetQ, r + offsetR]))
   const toLocal = (q: number, r: number) => q - offsetQ + ',' + (r - offsetR)
+  // タイルを置きうる座標（盤面の形の範囲）
+  const keyList = fullCellList(radius).map(([q, r]) => q + offsetQ + ',' + (r + offsetR))
   const layoutCamera = () => {
     const cellHeight = fitCell(radius)
     const fieldAreaWidth = fieldAreaRef.current!.clientWidth - 8
@@ -48,6 +50,7 @@ export function createPlayScene({
   const scene: Scene = {
     camera: layoutCamera(),
     focus: [offsetQ, offsetR],
+    tileKeyList: () => keyList,
     cell(q, r) {
       const key = toLocal(q, r)
       const mix = target.state[key]
