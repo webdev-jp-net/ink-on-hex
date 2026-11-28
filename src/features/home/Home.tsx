@@ -3,7 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSetAtom } from 'jotai'
 import { gsap } from 'gsap'
 import { backAtom, routeAtom, type Route } from '@/state/atoms'
-import { despawnTile, visibleKeyList } from '@/lib/board/engine'
+import { despawnTile, hasTileAt, visibleKeyList } from '@/lib/board/engine'
 import { EMPTY, type Scene } from '@/lib/board/scene'
 import { homeCamera, homeFlowOffset, worldPosition } from '@/lib/board/geometry'
 import { kick } from '@/lib/board/redraw'
@@ -35,9 +35,10 @@ export function Home() {
   useScene(
     () => {
       const holeList = new Map<string, boolean>()
+      // 盤面にすでにあるタイルは引き継ぎ、それ以外の座標をところどころ欠けさせる
       const has = (q: number, r: number) => {
         const key = q + ',' + r
-        if (!holeList.has(key)) holeList.set(key, Math.random() < HOLE_RATE)
+        if (!holeList.has(key)) holeList.set(key, !hasTileAt(q, r) && Math.random() < HOLE_RATE)
         return !holeList.get(key)
       }
       let startedAt = 0

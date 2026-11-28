@@ -20,6 +20,9 @@ export interface Scene {
   clipBottom?: number
   tick?(now: number): boolean
   layout?(): void
+  // タイルを置きうる座標（"q,r"）。この外の座標で cell はタイルを返さない。
+  // 盤面の限られた範囲にだけタイルを置く場面が知らせると、切り替えの終わりにその範囲だけを調べる
+  tileKeyList?(): Iterable<string>
 }
 
 // 何も描かないセル。透明なので色は使われない

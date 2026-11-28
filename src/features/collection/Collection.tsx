@@ -237,6 +237,7 @@ export function Collection() {
         },
         // 1色の行（Cyan・Magenta・Yellow）は常に色が付いている
         colored: () => true,
+        tileKeyList: () => byKey.keys(),
         layout,
       }
       sceneRef.current = scene

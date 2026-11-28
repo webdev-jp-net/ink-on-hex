@@ -13,7 +13,7 @@ import {
 } from './sweep'
 export const PERSPECTIVE = 2.2
 const GLASS_FROST = 0.55
-const GLASS_ALPHA = 0.6
+export const GLASS_ALPHA = 0.6
 const FROST_PX = 10
 const BLUR_RANGE = 0.05
 export interface Fall {
@@ -30,6 +30,34 @@ export interface Fall {
   speed: number
   gravityDirection: [number, number, number]
   color: number[] | null
+  // 次の場面にも要るタイルとして、元の場所へ戻している途中。
+  // position・angle は戻し始めたときの姿勢で、progress（0〜1）の分だけ元の場所へ近づける。
+  // 戻し直したときは fromProgress から続け、見え方（alpha・color・radiusScale・stroke・glint）は
+  // 戻し始めた・戻し直したときの値から盤面のタイルの見え方へ移す。
+  // zoom は切り替え中に戻し始めたときの寄り引きの進み、startedAt は切り替えていないときに戻し始めた時刻。
+  // drawn は今描いている見え方（戻し直す・また落とすときに、そこから続ける）
+  returning?: {
+    position: [number, number, number]
+    angle: number
+    fromProgress: number
+    alpha: number
+    color: number[]
+    radiusScale: number
+    stroke: number
+    glint: number
+    zoom: number
+    startedAt: number | null
+    progress: number
+    drawn: { alpha: number; color: number[]; radiusScale: number; stroke: number; glint: number }
+  } | null
+  // 戻している途中からまた落としたタイルの、盤面のタイルの見え方の残り。weight（from から0へ減る）の分だけ残す
+  settle?: {
+    from: number
+    weight: number
+    radiusScale: number
+    stroke: number
+    glint: number
+  } | null
 }
 
 // 1枚のタイル。画面座標・半径・色・不透明度・枠線・落下・光・浮き
@@ -148,7 +176,7 @@ const FRAGMENT = `
     vec3 light = vec3(1.0);
     if (vFall < 0.5) {
       vec4 behind = texture2D(uBehind, gl_FragCoord.xy / uBehindResolution);
-      light = mix(behind.rgb + uBackground * (1.0 - behind.a), vec3(1.0), GLASS_FROST);
+      light = mix(behind.rgb + uBackground * (1.0 - behind.a), vec3(1.0), mix(GLASS_FROST, 1.0, vFall * 2.0));
     }
     color = min(light * vColor + fresnel * 0.25, vec3(1.0));
     if (vGlint > 0.001 && vFall < 0.5) {
@@ -484,8 +512,18 @@ export function createBoard(canvas: HTMLCanvasElement): Board {
       attributeList.color.array[i * 3 + 2] = tile.blue
       attributeList.alpha.array[i] = tile.alpha
       attributeList.stroke.array[i] = tile.stroke
-      attributeList.fall.array[i] = tile.fall ? 1 : 0
-      attributeList.glint.array[i] = tile.fall ? 0 : tile.glint
+      // 元の場所へ戻している途中のタイルは、落ちる姿勢のまま盤面のタイルとして描く
+      // 落ちているタイルは1。戻している途中は、進みに合わせて落ちているときの見え方（すりガラスを通さない光）から
+      // 盤面のタイルの見え方へ移すため、0.5未満の値で渡す（0.5を境に描く回を分けているため）
+      const fallWeight = !tile.fall
+        ? 0
+        : tile.fall.returning
+          ? 0.499 * (1 - tile.fall.returning.progress)
+          : tile.fall.settle
+            ? 0.499 * (1 - tile.fall.settle.weight)
+            : 1
+      attributeList.fall.array[i] = fallWeight
+      attributeList.glint.array[i] = fallWeight > 0.5 ? 0 : tile.glint
     }
     target.count = count
     target.instanceMatrix.needsUpdate = true
