@@ -198,18 +198,33 @@ export function Collection() {
 
   useScene(
     () => {
+      // 行の位置を先にまとめて読み、スタイルの書き込みは後でまとめる。
+      // 読み書きを行ごとに交互にすると、そのたびにスタイルとレイアウトの計算がやり直しになり、開くときの処理が1フレームに収まらない
       const bound = edgeList()
+      const elementList = rowState.current.map((_, i) => elementOf(i))
       rowState.current.forEach((state, i) => {
-        const { row, wordList, dotList } = elementOf(i)
-        gsap.set(dotList, { opacity: 0, scale: POP.from, transformOrigin: '50% 50%' })
-        gsap.set(wordList, { filter: 'blur(0px)' })
-        state.isVisible = clearOf(row, bound)
+        state.isVisible = clearOf(elementList[i].row, bound)
         state.isHidden = !state.isVisible
-        if (!state.isVisible) gsap.set(wordList, { opacity: 0, filter: 'blur(' + OUT_BLUR + 'px)' })
       })
+      const camera = cameraOn(slotRef.current!, plan.box, plan.scale, plan.tileRatio)
+      const bounds = bodyRef.current!.getBoundingClientRect()
+      // 点は popIn が縮めた状態から出すので、ここでは隠すだけにする（変形を読む処理は重いので、出すときに回す）
+      gsap.set(
+        elementList.flatMap(element => element.dotList),
+        { opacity: 0 }
+      )
+      gsap.set(
+        elementList.flatMap(element => element.wordList),
+        { filter: 'blur(0px)' }
+      )
+      const hiddenWordList = elementList
+        .filter((_, i) => rowState.current[i].isHidden)
+        .flatMap(element => element.wordList)
+      if (hiddenWordList.length)
+        gsap.set(hiddenWordList, { opacity: 0, filter: 'blur(' + OUT_BLUR + 'px)' })
       const byKey = new Map(rowState.current.map(state => [state.key, state]))
       const scene: Scene = {
-        camera: cameraOn(slotRef.current!, plan.box, plan.scale, plan.tileRatio),
+        camera,
         focus: plan.anchor,
         cell(q, r) {
           const state = byKey.get(q + ',' + r)
@@ -225,7 +240,6 @@ export function Collection() {
         layout,
       }
       sceneRef.current = scene
-      const bounds = bodyRef.current!.getBoundingClientRect()
       scene.clipTop = bounds.top
       scene.clipBottom = bounds.bottom
       return scene
